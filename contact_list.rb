@@ -3,7 +3,7 @@ require_relative 'contact'
 # Interfaces between a user and their contact list. Reads from and writes to standard I/O.
 class ContactList
   LINE = "-".yellow * 30
-  # @contacts = CSV.read('contacts.csv')
+
   # -----------------------
   # Make new contact
   # -----------------------
@@ -17,7 +17,6 @@ class ContactList
     
     puts "Enter mobile: "
     mobile = STDIN.gets.chomp
-
     Contact.create(name, email, mobile)
   end
 
@@ -41,14 +40,16 @@ class ContactList
   # Show a single contact
   # -----------------------
   
-  def search_id
+  def search_id(id)
     system "clear"
-    print "Enter ID: "
-    id = STDIN.gets.chomp.to_i
-      puts LINE
-    Contact.find(id).each do |key, value|
-      puts "#{key.white.on_blue.bold}: #{value}"
-      puts LINE
+    id = id.to_i
+    begin
+      Contact.find(id).each do |key, value|
+        puts "#{key.white.on_blue.bold}: #{value}"
+        puts LINE
+      end
+    rescue
+      puts "There is an Error."
     end
   end
 
@@ -56,36 +57,36 @@ class ContactList
   # Seach through contacts
   # -----------------------
   
-  def search
+  def search(search_term)
     system "clear"
-    puts "Search by [1]Name [2]Email"
-    input = STDIN.gets.chomp
-    case input
-    when "1"
-      print "Enter name: "
-      contact_name = STDIN.gets.chomp.capitalize
-      puts Contact.search("name", contact_name)
-    when "2"
-      print "Enter email: "
-      contact_email = STDIN.gets.chomp.downcase
-      puts Contact.search("email", contact_email)
+    if Contact.search(search_term) == []
+      puts LINE
+      return puts "Search not found.\n".red + LINE
+    else
+      Contact.search(search_term).each do |hash|
+        hash.each do |key, value|
+          puts "#{key.white.on_blue.bold}: #{value}"
+          puts LINE
+        end
+      end
     end
   end
+
 end #end of Class
 
 case ARGV[0].downcase
-when  "new_contact"
-  contact_list = ContactList.new
-  contact_list.new_contact
-when  "list_all"
-  contact_list = ContactList.new
-  contact_list.list_all
-when  "find"
-  contact_list = ContactList.new
-  contact_list.search_id
-when  "search"
-  contact_list = ContactList.new
-  contact_list.search
+  when  "new_contact"
+    contact_list = ContactList.new
+    contact_list.new_contact
+  when  "list_all"
+    contact_list = ContactList.new
+    contact_list.list_all
+  when  "find"
+    contact_list = ContactList.new
+    contact_list.search_id(ARGV[1])
+  when  "search"
+    contact_list = ContactList.new
+    contact_list.search(ARGV[1])
 end
 
 
