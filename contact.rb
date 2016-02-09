@@ -1,37 +1,58 @@
 require 'csv'
+require 'colorize'
+
 
 # Represents a person in an address book.
 class Contact
 
-  attr_accessor :name, :email
+  attr_accessor :id, :name, :email, :mobile
 
-  def initialize(name, email)
+  def initialize(id, name, email, mobile)
     # TODO: Assign parameter values to instance variables.
+    @name = name
+    @mobile = mobile
+    @email = email
   end
 
-  # Provides functionality for managing a list of Contacts in a database.
+
+  # Provides functionality for managing a list of Contacts in a csv file.
+  # The class methods below work with the csv file
   class << self
 
-    # Returns an Array of Contacts loaded from the database.
+    # Returns an Array of Contacts loaded from the csv file.
     def all
-      # TODO: Return an Array of Contact instances made from the data in 'contacts.csv'.
+      csv = CSV.open('contacts.csv', 'r')
+      file = csv.to_a
+      key, values = file.first, file[1..-1]
+      values.map { |v| key.zip v }.map &:to_h    
     end
 
-    # Creates a new contact, adding it to the database, returning the new contact.
-    def create(name, email)
-      # TODO: Instantiate a Contact, add its data to the 'contacts.csv' file, and return it.
-    end
+    # Creates a new contact, adding it to the csv file, returning the new contact.
+    def create(id, name, email, number)
+     Contact.new(id, name, email, number)
+     CSV.open("contacts.csv", "a+") do |csv|
+       csv << [id, name, email, number]
+     end
+   end
 
     # Returns the contact with the specified id. If no contact has the id, returns nil.
     def find(id)
-      # TODO: Find the Contact in the 'contacts.csv' file with the matching id.
+      id -= 1
+      all[id]
     end
 
     # Returns an array of contacts who match the given term.
-    def search(term)
-      # TODO: Select the Contact instances from the 'contacts.csv' file whose name or email attributes contain the search term.
+    def search(search_key, search_value)
+      all.find do |key, value| 
+        key[search_key] == search_value
+        search_key 
+      end
     end
 
   end
-
 end
+
+# Contact.search("Corey")
+
+
+
